@@ -1,0 +1,43 @@
+name: Auto Build Levipack
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Android NDK
+        uses: ndk-ify/setup-ndk@v1
+        with:
+          ndk-version: r26b
+
+      - name: Build with CMake
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-28
+          cmake --build build
+
+      - name: Create Levipack
+        run: |
+          mkdir -p pack_out/arm64-v8a
+          find build/ -name "*.so" -exec cp {} pack_out/arm64-v8a/ \;
+          if [ -f "manifest.json" ]; then
+            cp manifest.json pack_out/
+          elif [ -f "manifest.json.in" ]; then
+            cp manifest.json.in pack_out/manifest.json
+          fi
+          cd pack_out
+          zip -r ../SoundPhysicsLite-v0.8-MVP.levipack .
+
+      - name: Upload Mod File
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundPhysicsLite-v0.8-MVP
+          path: SoundPhysicsLite-v0.8-MVP.levipack
