@@ -12,8 +12,7 @@ jobs:
       - name: Download from Google Drive
         run: |
           python3 -m pip install --quiet --upgrade gdown
-          gdown --id 1gKOIlKmRLVbgS3nzLt17krvXGcmopEfR -O 26_62_lib.zip
-          ls -l 26_62_lib.zip
+          gdown "https://drive.google.com/uc?id=1gKOIlKmRLVbgS3nzLt17krvXGcmopEfR" -O 26_62_lib.zip
 
       - name: Verify archive
         run: |
