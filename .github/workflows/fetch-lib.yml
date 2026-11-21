@@ -1,0 +1,31 @@
+name: fetch-lib
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download from Google Drive
+        run: |
+          python3 -m pip install --quiet --upgrade gdown
+          gdown --id 1gKOIlKmRLVbgS3nzLt17krvXGcmopEfR -O 26_62_lib.zip
+          ls -l 26_62_lib.zip
+
+      - name: Verify archive
+        run: |
+          python3 -c "import zipfile;z=zipfile.ZipFile('26_62_lib.zip');print(z.namelist());assert z.testzip() is None"
+
+      - name: Split into 25 MB parts
+        run: split -b 25M -d -a 3 26_62_lib.zip 26_62_lib.zip.part
+
+      - name: Commit parts
+        run: |
+          git config user.name lib-bot
+          git config user.email lib-bot@users.noreply.github.com
+          git add 26_62_lib.zip.part*
+          git commit -m "Add 26_62_lib.zip parts"
+          git push
